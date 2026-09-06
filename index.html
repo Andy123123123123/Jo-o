@@ -1,1 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Ficha Jonas</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #000; color: #fff; padding: 10px; margin: 0; box-sizing: border-box; }
 
+    /* Menu de Abas */
+    .tab-container { display: flex; width: 100%; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 6px; box-sizing: border-box; }
+    .tab-btn { flex: 1 1 0px; min-width: 0; background: #1a1a1a; border: 1px solid #333; color: #888; padding: 8px 2px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab-btn:hover { background: #2a2a2a; color: #fff; }
+    .tab-btn.active { background: #333; color: #fff; border-color: #2196f3; }
+
+    /* Conteúdo das Abas */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Painel de Dados */
+    .dice-panel { background: #111; border: 1px solid #222; border-radius: 6px; padding: 8px; margin-bottom: 12px; }
+    .dice-panel-title { font-size: 11px; font-weight: bold; color: #888; margin-bottom: 6px; text-transform: uppercase; }
+    .dice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .dice-btn { background: #1f1f1f; border: 1px solid #333; color: #e0e0e0; padding: 6px 0; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; }
+    .dice-btn:hover { background: #333; border-color: #2196f3; color: #fff; }
+
+    /* Dados Personalizados */
+    .custom-dice-row { display: flex; gap: 6px; margin-top: 6px; }
+    .custom-dice-row input { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 50%; text-align: center; }
+    .custom-dice-row button { flex: 1; background: #2196f3; border: none; color: #fff; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .custom-dice-row button:hover { background: #1e88e5; }
+
+    /* Perícias e Cards */
+    .skill-list { display: flex; flex-direction: column; gap: 4px; }
+    .skill-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; font-size: 13px; border-bottom: 1px solid #111; }
+    .highlight-blue { color: #2196f3; }
+    .highlight-green { color: #4caf50; }
+    .highlight-red { color: #f44336; }
+    .attr-tag { font-size: 12px; margin: 0 4px; }
+    .bonus-val { display: inline-block; width: 30px; text-align: center; font-weight: bold; }
+    .underline-blue { border-bottom: 2px solid #2196f3; }
+    .underline-green { border-bottom: 2px solid #4caf50; }
+    .underline-red { border-bottom: 2px solid #f44336; }
+
+    .card { background: #111; border: 1px solid #222; border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+    .card-title { font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+    .card-info { font-size: 12px; color: #a855f7; display: flex; gap: 10px; align-items: center; }
+    .ritual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .ritual-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 6px 4px; border-radius: 4px; font-size: 11px; text-align: center; cursor: pointer; }
+    .ritual-btn:hover { background: #2a2a2a; border-color: #a855f7; }
+    .ritual-btn span { display: block; color: #888; font-size: 9px; margin-top: 2px; }
+
+    .roll-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 15px; margin-right: 6px; }
+    .roll-btn:hover { color: #fff; transform: scale(1.1); }
+
+    /* Calculadora */
+    .calc-container { background: #111; border: 1px solid #222; border-radius: 6px; padding: 10px; width: 100%; box-sizing: border-box; }
+    .calc-display { width: 100%; height: 36px; background: #000; border: 1px solid #333; color: #0f0; font-family: monospace; font-size: 18px; text-align: right; padding: 4px 8px; box-sizing: border-box; margin-bottom: 10px; border-radius: 4px; }
+    .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .calc-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; }
+    .calc-btn:hover { background: #2a2a2a; }
+    .calc-btn.op { background: #2196f3; color: #fff; border-color: #1e88e5; }
+    .calc-btn.clear { background: #f44336; color: #fff; border-color: #e53935; }
+  </style>
+</head>
+<body>
+
+  <div class="tab-container">
+    <button class="tab-btn active" id="btn-attacks" onclick="mudarAba('attacks')">Ataques & Rituais</button>
+    <button class="tab-btn" id="btn-skills" onclick="mudarAba('skills')">Perícias</button>
+    <button class="tab-btn" id="btn-calc" onclick="mudarAba('calc')">Calculadora</button>
+  </div>
+
+  <div id="tab-attacks" class="tab-content active">
+    <div class="dice-panel">
+      <div class="dice-panel-title">Rolar Dados Gerais</div>
+      <div class="dice-grid">
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 4)">d4</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 6)">d6</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 8)">d8</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 10)">d10</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 12)">d12</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 20)">d20</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 100)">d100</button>
+      </div>
+      <div class="custom-dice-row">
+        <input type="number" id="qtd-attacks" value="1" min="1" placeholder="Qtd">
+        <input type="number" id="lados-attacks" value="6" min="2" placeholder="Lados">
+        <button onclick="rolarPersonalizado('qtd-attacks', 'lados-attacks')">Rolar</button>
+      </div>
+    </div>
+    <div id="attacks-container"></div>
+  </div>
+
+  <div id="tab-skills" class="tab-content">
+    <div class="dice-panel">
+      <div class="dice-panel-title">Rolar Dados Gerais</div>
+      <div class="dice-grid">
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 4)">d4</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 6)">d6</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 8)">d8</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 10)">d10</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 12)">d12</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 20)">d20</button>
+        <button class="dice-btn" onclick="rolarDadoLivre(1, 100)">d100</button>
+      </div>
+      <div class="custom-dice-row">
+        <input type="number" id="qtd-skills" value="1" min="1" placeholder="Qtd">
+        <input type="number" id="lados-skills" value="6" min="2" placeholder="Lados">
+        <button onclick="rolarPersonalizado('qtd-skills', 'lados-skills')">Rolar</button>
+      </div>
+    </div>
+    <div class="skill-list" id="skills-container"></div>
+  </div>
+
+  <div id="tab-calc" class="tab-content">
+    <div class="calc-container">
+      <input type="text" id="calc-display" class="calc-display" readonly value="0">
+      <div class="calc-grid">
+        <button class="calc-btn clear" onclick="calcClear()">C</button>
+        <button class="calc-btn op" onclick="calcAdd('/')">/</button>
+        <button class="calc-btn op" onclick="calcAdd('*')">*</button>
+        <button class="calc-btn op" onclick="calcAdd('-')">-</button>
+        
+        <button class="calc-btn" onclick="calcAdd('7')">7</button>
+        <button class="calc-btn" onclick="calcAdd('8')">8</button>
+        <button class="calc-btn" onclick="calcAdd('9')">9</button>
+        <button class="calc-btn op" onclick="calcAdd('+')">+</button>
+
+        <button class="calc-btn" onclick="calcAdd('4')">4</button>
+        <button class="calc-btn" onclick="calcAdd('5')">5</button>
+        <button class="calc-btn" onclick="calcAdd('6')">6</button>
+        <button class="calc-btn op" onclick="calcEqual()">=</button>
+
+        <button class="calc-btn" onclick="calcAdd('1')">1</button>
+        <button class="calc-btn" onclick="calcAdd('2')">2</button>
+        <button class="calc-btn" onclick="calcAdd('3')">3</button>
+        <button class="calc-btn" onclick="calcAdd('0')">0</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function mudarAba(nomeAba) {
+      document.getElementById('tab-attacks').classList.remove('active');
+      document.getElementById('tab-skills').classList.remove('active');
+      document.getElementById('tab-calc').classList.remove('active');
+      document.getElementById('btn-attacks').classList.remove('active');
+      document.getElementById('btn-skills').classList.remove('active');
+      document.getElementById('btn-calc').classList.remove('active');
+
+      if (nomeAba === 'attacks') {
+        document.getElementById('tab-attacks').classList.add('active');
+        document.getElementById('btn-attacks').classList.add('active');
+      } else if (nomeAba === 'skills') {
+        document.getElementById('tab-skills').classList.add('active');
+        document.getElementById('btn-skills').classList.add('active');
+      } else if (nomeAba === 'calc') {
+        document.getElementById('tab-calc').classList.add('active');
+        document.getElementById('btn-calc').classList.add('active');
+      }
+    }
+
+    let calcExpression = "";
+    function calcAdd(val) {
+      if (calcExpression === "0") calcExpression = "";
+      calcExpression += val;
+      document.getElementById('calc-display').value = calcExpression;
+    }
+    function calcClear() {
+      calcExpression = "";
+      document.getElementById('calc-display').value = "0";
+    }
+    function calcEqual() {
+      try {
+        calcExpression = String(eval(calcExpression));
+        document.getElementById('calc-display').value = calcExpression;
+      } catch (e) {
+        document.getElementById('calc-display').value = "Erro";
+        calcExpression = "";
+      }
+    }
+
+    const atributos = { AGI: 3, FOR: 3, INT: 2, PRE: -1, VIG: 3 };
+
+    const pericias = [
+      { nome: "Atletismo", attr: "FOR", bonus: 5, treino: 5, cor: "green" },
+      { nome: "Fortitude", attr: "VIG", bonus: 10, treino: 10, cor: "blue" },
+      { nome: "Furtividade+", attr: "AGI", bonus: 10, treino: 0, cor: "blue" },
+      { nome: "Iniciativa", attr: "AGI", bonus: 10, treino: 10, cor: "blue" },
+      { nome: "Luta", attr: "FOR", bonus: 10, treino: 10, cor: "blue" },
+      { nome: "Ocultismo*", attr: "INT", bonus: 7, treino: 5, cor: "green" },
+      { nome: "Pilotagem*", attr: "AGI", bonus: -5, treino: 0, cor: "red" },
+      { nome: "Reflexos", attr: "AGI", bonus: 10, treino: 10, cor: "blue" },
+      { nome: "Sobrevivência", attr: "INT", bonus: 10, treino: 10, cor: "blue" }
+    ];
+
+    function rolarDados(qtd, lados, soma = 0) {
+      let resultados = [];
+      let total = 0;
+      for (let i = 0; i < qtd; i++) {
+        let val = Math.floor(Math.random() * lados) + 1;
+        resultados.push(val);
+        total += val;
+      }
+      total += soma;
+      return { resultados, total };
+    }
+
+    function enviarNotificacao(msg) {
+      alert(msg);
+    }
+
+    function rolarDadoLivre(qtd, lados) {
+      const { resultados, total } = rolarDados(qtd, lados);
+      enviarNotificacao(`Jonas - Rolo de ${qtd}d${lados}: [${resultados.join(", ")}] = ${total}`);
+    }
+
+    function rolarPersonalizado(idQtd, idLados) {
+      const qtd = parseInt(document.getElementById(idQtd).value) || 1;
+      const lados = parseInt(document.getElementById(idLados).value) || 6;
+      rolarDadoLivre(qtd, lados);
+    }
+
+    function rolarAtaque(nome, qtd, lados, soma = 0, crit = "") {
+      const { resultados, total } = rolarDados(qtd, lados, soma);
+      let msg = `Jonas - Dano de ${nome}: [${resultados.join(", ")}]`;
+      if (soma > 0) msg += ` + ${soma}`;
+      msg += ` = ${total}`;
+      if (crit) msg += ` (Crítico: ${crit})`;
+
+      enviarNotificacao(msg);
+    }
+
+    function rolarPericia(p) {
+      const valAttr = atributos[p.attr] !== undefined ? atributos[p.attr] : 1;
+      let dados = [];
+      let dadoEscolhido = 0;
+
+      if (valAttr <= 0) {
+        const d1 = Math.floor(Math.random() * 20) + 1;
+        const d2 = Math.floor(Math.random() * 20) + 1;
+        dados = [d1, d2];
+        dadoEscolhido = Math.min(d1, d2);
+      } else {
+        for (let i = 0; i < valAttr; i++) {
+          dados.push(Math.floor(Math.random() * 20) + 1);
+        }
+        dadoEscolhido = Math.max(...dados);
+      }
+
+      const totalBonus = p.bonus;
+      const total = dadoEscolhido + totalBonus;
+      const sinalSoma = totalBonus >= 0 ? `+ ${totalBonus}` : `- ${Math.abs(totalBonus)}`;
+      const tipoEscolha = valAttr <= 0 ? "Menor" : "Maior";
+
+      enviarNotificacao(`Jonas - Teste de ${p.nome}: [${dados.join(", ")}] ➔ ${tipoEscolha}: ${dadoEscolhido} ${sinalSoma} = ${total}`);
+    }
+
+    function renderizar() {
+      const attacksContainer = document.getElementById("attacks-container");
+      attacksContainer.innerHTML = `
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">Cria do djabo</div>
+              <div class="card-info"><span>Dano: 2d10</span> <span>Crítico: 15/x3</span></div>
+            </div>
+            <button class="roll-btn" id="btn-cria">🎲</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">Katana</div>
+              <div class="card-info"><span>Dano: 2d10</span> <span>Crítico: 15</span></div>
+            </div>
+            <button class="roll-btn" id="btn-katana">🎲</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">cuidado que eu moido >:3</div>
+              <div class="card-info"><span>Dano: 2d8</span> <span>Crítico: 18</span></div>
+            </div>
+            <button class="roll-btn" id="btn-moido">🎲</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">Sanguinária (dano)</div>
+              <div class="card-info"><span>Dano: 2d6</span> <span>Crítico: x1</span></div>
+            </div>
+            <button class="roll-btn" id="btn-sang-dano">🎲</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">Sanguinária (cura)</div>
+              <div class="card-info"><span>Dano: 2d10</span> <span>Crítico: x1</span></div>
+            </div>
+            <button class="roll-btn" id="btn-sang-cura">🎲</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">cria do djabo (contra ataque)</div>
+              <div class="card-info"><span>Dano: 2d10+3</span> <span>Crítico: 15/x3</span></div>
+            </div>
+            <button class="roll-btn" id="btn-cria-contra">🎲</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Descarnar</div>
+          <div class="ritual-grid">
+            <button class="ritual-btn" id="btn-desc-norm">NORMAL<span>6d8</span></button>
+            <button class="ritual-btn" id="btn-desc-disc">DISCENTE<span>10d8</span></button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("btn-cria").onclick = () => rolarAtaque("Cria do djabo", 2, 10, 0, "15/x3");
+      document.getElementById("btn-katana").onclick = () => rolarAtaque("Katana", 2, 10, 0, "15");
+      document.getElementById("btn-moido").onclick = () => rolarAtaque("cuidado que eu moido >:3", 2, 8, 0, "18");
+      document.getElementById("btn-sang-dano").onclick = () => rolarAtaque("Sanguinária (dano)", 2, 6, 0, "x1");
+      document.getElementById("btn-sang-cura").onclick = () => rolarAtaque("Sanguinária (cura)", 2, 10, 0, "x1");
+      document.getElementById("btn-cria-contra").onclick = () => rolarAtaque("cria do djabo (contra ataque)", 2, 10, 3, "15/x3");
+
+      document.getElementById("btn-desc-norm").onclick = () => rolarAtaque("Descarnar (Normal)", 6, 8, 0);
+      document.getElementById("btn-desc-disc").onclick = () => rolarAtaque("Descarnar (Discente)", 10, 8, 0);
+
+      const skillsContainer = document.getElementById("skills-container");
+      skillsContainer.innerHTML = "";
+      pericias.forEach(p => {
+        const row = document.createElement("div");
+        row.className = "skill-row";
+        
+        let classColor = "";
+        let underlineClass = "";
+        
+        if (p.cor === "blue") {
+          classColor = "highlight-blue";
+          underlineClass = "underline-blue";
+        } else if (p.cor === "green") {
+          classColor = "highlight-green";
+          underlineClass = "underline-green";
+        } else if (p.cor === "red" || p.bonus < 0) {
+          classColor = "highlight-red";
+          underlineClass = "underline-red";
+        }
+
+        row.innerHTML = `
+          <button class="roll-btn">🎲</button>
+          <span class="skill-name ${classColor}" style="flex-grow:1; font-weight:bold;">${p.nome}</span>
+          <span class="attr-tag ${classColor}">( ${p.attr} )</span>
+          <span class="attr-tag ${classColor}">( ${p.bonus} )</span>
+          <span class="bonus-val ${underlineClass} ${classColor}">${p.bonus}</span>
+          <span class="bonus-val">${p.treino}</span>
+        `;
+        row.querySelector(".roll-btn").onclick = () => rolarPericia(p);
+        skillsContainer.appendChild(row);
+      });
+    }
+
+    renderizar();
+  </script>
+</body>
+</html>
